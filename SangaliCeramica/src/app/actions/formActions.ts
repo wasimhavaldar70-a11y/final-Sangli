@@ -6,6 +6,8 @@ import {
   contactSchema,
   inquirySchema,
 } from '@/lib/validation/schemas'
+import { getDb } from '@/lib/mongodb'
+import { randomUUID } from 'crypto'
 
 export async function submitInquiry(formData: any) {
   // Validate data server-side
@@ -22,24 +24,25 @@ export async function submitInquiry(formData: any) {
     return {
       success: true,
       offline: true,
-      message: 'Inquiry received in Offline Preview Mode! Set up Supabase to save it in your database.',
+      message: 'Inquiry received in Offline Preview Mode! Set up MongoDB connection string to save it in your database.',
     }
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase.from('inquiries').insert({
+    const newId = randomUUID()
+    await db.collection('inquiries').insertOne({
+      _id: newId,
       customer_name: validatedData.customer_name,
       phone: validatedData.phone,
       email: validatedData.email || null,
       product_id: validatedData.product_id || null,
       message: validatedData.message,
       status: 'pending',
-    })
-
-    if (error) throw error
+      created_at: new Date().toISOString(),
+    } as any)
 
     return {
       success: true,
@@ -74,19 +77,20 @@ export async function submitAppointment(formData: any) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase.from('appointments').insert({
+    const newId = randomUUID()
+    await db.collection('appointments').insertOne({
+      _id: newId,
       customer_name: validatedData.customer_name,
       phone: validatedData.phone,
       email: validatedData.email || null,
       appointment_date: validatedData.appointment_date,
       message: validatedData.message || null,
       status: 'pending',
-    })
-
-    if (error) throw error
+      created_at: new Date().toISOString(),
+    } as any)
 
     return {
       success: true,
@@ -121,19 +125,20 @@ export async function submitContact(formData: any) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase.from('inquiries').insert({
+    const newId = randomUUID()
+    await db.collection('inquiries').insertOne({
+      _id: newId,
       customer_name: validatedData.customer_name,
       phone: validatedData.phone,
       email: validatedData.email || null,
       product_id: null,
       message: `[General Contact Request] ${validatedData.message}`,
       status: 'pending',
-    })
-
-    if (error) throw error
+      created_at: new Date().toISOString(),
+    } as any)
 
     return {
       success: true,

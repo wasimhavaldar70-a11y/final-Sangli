@@ -3,77 +3,36 @@
 import { isDbConfigured } from '@/services/api'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { getDb } from '@/lib/mongodb'
+import { randomUUID } from 'crypto'
 
 export async function adminLogin(formData: any) {
   const email = formData.email
   const password = formData.password
-  const configured = await isDbConfigured()
 
-  if (!configured) {
-    if (email === 'admin@sangliceramica.com' && password === 'admin123') {
-      const cookieStore = await cookies()
-      cookieStore.set('sb-admin-preview-session', 'true', {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24, // 1 day
-      })
-      return { success: true, message: 'Logged in as Admin (Preview Mode)' }
-    }
-    return {
-      success: false,
-      error: 'Invalid credentials. Use admin@sangliceramica.com / admin123 for preview.',
-    }
+  const expectedEmail = process.env.ADMIN_EMAIL || 'admin@sangliceramica.com'
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123'
+
+  if (email === expectedEmail && password === expectedPassword) {
+    const cookieStore = await cookies()
+    cookieStore.set('sb-admin-preview-session', 'true', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 1 day
+    })
+    return { success: true, message: 'Successfully logged in.' }
   }
 
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) throw error
-
-    // Verify role is admin
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', data.user.id)
-      .single()
-
-    if (profileError || profile?.role !== 'admin') {
-      await supabase.auth.signOut()
-      return {
-        success: false,
-        error: 'Unauthorized. Only admins can access the dashboard.',
-      }
-    }
-
-    return { success: true, message: 'Successfully logged in.' }
-  } catch (error: any) {
-    console.error('Login error:', error)
-    return { success: false, error: error.message || 'Authentication failed.' }
+  return {
+    success: false,
+    error: 'Invalid administrator email or password.',
   }
 }
 
 export async function adminLogout() {
   const cookieStore = await cookies()
   cookieStore.delete('sb-admin-preview-session')
-
-  const configured = await isDbConfigured()
-  if (configured) {
-    try {
-      const { createClient } = await import('@/lib/supabase/server')
-      const supabase = await createClient()
-      await supabase.auth.signOut()
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
   return { success: true }
 }
 
@@ -87,37 +46,40 @@ export async function createProductAction(productData: any) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { data, error } = await supabase
-      .from('products')
-      .insert({
-        category_id: productData.category_id,
-        name: productData.name,
-        slug: productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        description: productData.description || null,
-        price: parseFloat(productData.price) || 0,
-        brand: productData.brand,
-        size: productData.size,
-        finish: productData.finish,
-        material: productData.material,
-        stock_status: productData.stock_status,
-        featured: !!productData.featured,
-      })
-      .select()
-      .single()
+    const newId = randomUUID()
+    const slug = productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
-    if (error) throw error
+    const productImages = productData.image_url
+      ? [
+          {
+            id: randomUUID(),
+            product_id: newId,
+            image_url: productData.image_url,
+            sort_order: 0,
+            created_at: new Date().toISOString(),
+          },
+        ]
+      : []
 
-    // If an image URL was specified, add it to product_images
-    if (productData.image_url) {
-      await supabase.from('product_images').insert({
-        product_id: data.id,
-        image_url: productData.image_url,
-        sort_order: 0,
-      })
-    }
+    await db.collection('products').insertOne({
+      _id: newId,
+      category_id: productData.category_id,
+      name: productData.name,
+      slug,
+      description: productData.description || null,
+      price: parseFloat(productData.price) || 0,
+      brand: productData.brand,
+      size: productData.size || null,
+      finish: productData.finish || null,
+      material: productData.material || null,
+      stock_status: productData.stock_status || 'In Stock',
+      featured: !!productData.featured,
+      product_images: productImages,
+      created_at: new Date().toISOString(),
+    } as any)
 
     revalidatePath('/products')
     return { success: true, message: 'Product created successfully!' }
@@ -137,29 +99,51 @@ export async function updateProductAction(id: string, productData: any) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase
-      .from('products')
-      .update({
-        category_id: productData.category_id,
-        name: productData.name,
-        slug: productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        description: productData.description || null,
-        price: parseFloat(productData.price) || 0,
-        brand: productData.brand,
-        size: productData.size,
-        finish: productData.finish,
-        material: productData.material,
-        stock_status: productData.stock_status,
-        featured: !!productData.featured,
-      })
-      .eq('id', id)
+    const slug = productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
-    if (error) throw error
+    const existing = await db.collection('products').findOne({ _id: id } as any)
+    let productImages = existing?.product_images || []
 
-    revalidatePath(`/products/${productData.slug}`)
+    if (productData.image_url) {
+      if (productImages.length > 0) {
+        productImages[0].image_url = productData.image_url
+      } else {
+        productImages = [
+          {
+            id: randomUUID(),
+            product_id: id,
+            image_url: productData.image_url,
+            sort_order: 0,
+            created_at: new Date().toISOString(),
+          },
+        ]
+      }
+    }
+
+    await db.collection('products').updateOne(
+      { _id: id } as any,
+      {
+        $set: {
+          category_id: productData.category_id,
+          name: productData.name,
+          slug,
+          description: productData.description || null,
+          price: parseFloat(productData.price) || 0,
+          brand: productData.brand,
+          size: productData.size || null,
+          finish: productData.finish || null,
+          material: productData.material || null,
+          stock_status: productData.stock_status || 'In Stock',
+          featured: !!productData.featured,
+          product_images: productImages,
+        },
+      }
+    )
+
+    revalidatePath(`/products/${slug}`)
     revalidatePath('/products')
     return { success: true, message: 'Product updated successfully!' }
   } catch (error: any) {
@@ -178,11 +162,10 @@ export async function deleteProductAction(id: string) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase.from('products').delete().eq('id', id)
-    if (error) throw error
+    await db.collection('products').deleteOne({ _id: id } as any)
 
     revalidatePath('/products')
     return { success: true, message: 'Product deleted successfully!' }
@@ -206,13 +189,14 @@ export async function updateLeadStatusAction(
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const table = type === 'inquiry' ? 'inquiries' : 'appointments'
-    const { error } = await supabase.from(table).update({ status }).eq('id', id)
-
-    if (error) throw error
+    const collectionName = type === 'inquiry' ? 'inquiries' : 'appointments'
+    await db.collection(collectionName).updateOne(
+      { _id: id } as any,
+      { $set: { status } }
+    )
 
     return { success: true, message: 'Lead status updated successfully!' }
   } catch (error: any) {
@@ -231,22 +215,22 @@ export async function updateSettingsAction(settingsData: any) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    const { error } = await supabase
-      .from('settings')
-      .update({
-        website_name: settingsData.website_name,
-        address: settingsData.address,
-        phone: settingsData.phone,
-        email: settingsData.email,
-        whatsapp: settingsData.whatsapp,
-        google_map: settingsData.google_map,
-      })
-      .eq('id', '00000000-0000-0000-0000-000000000000')
-
-    if (error) throw error
+    await db.collection('settings').updateOne(
+      { _id: '00000000-0000-0000-0000-000000000000' } as any,
+      {
+        $set: {
+          website_name: settingsData.website_name,
+          address: settingsData.address,
+          phone: settingsData.phone,
+          email: settingsData.email,
+          whatsapp: settingsData.whatsapp,
+          google_map: settingsData.google_map,
+        },
+      }
+    )
 
     return { success: true, message: 'Website settings updated successfully!' }
   } catch (error: any) {
@@ -256,7 +240,6 @@ export async function updateSettingsAction(settingsData: any) {
 }
 
 export async function bulkUploadProductsCSV(csvText: string) {
-  // Simple CSV parser that handles commas inside quotes
   const parseCSVLine = (line: string) => {
     const result = []
     let current = ''
@@ -309,12 +292,11 @@ export async function bulkUploadProductsCSV(csvText: string) {
   }
 
   try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
+    const db = await getDb()
+    if (!db) throw new Error('MongoDB database not available')
 
-    // Get all categories to match slug with ID
-    const { data: categories } = await supabase.from('categories').select('id, slug')
-    const categoryMap = new Map(categories?.map((c) => [c.slug, c.id]))
+    const categories = await db.collection('categories').find({}).toArray()
+    const categoryMap = new Map(categories.map((c) => [c.slug, c._id.toString()]))
 
     const finalProducts = []
     for (const p of productsToInsert) {
@@ -325,7 +307,9 @@ export async function bulkUploadProductsCSV(csvText: string) {
         )
       }
 
+      const prodId = randomUUID()
       finalProducts.push({
+        _id: prodId,
         category_id: categoryId,
         name: p.name,
         slug: p.slug || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -337,21 +321,22 @@ export async function bulkUploadProductsCSV(csvText: string) {
         material: p.material || 'Vitrified',
         stock_status: p.stock_status || 'In Stock',
         featured: p.featured === 'true' || p.featured === '1',
+        product_images: [
+          {
+            id: randomUUID(),
+            product_id: prodId,
+            image_url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
+            sort_order: 0,
+            created_at: new Date().toISOString(),
+          },
+        ],
+        created_at: new Date().toISOString(),
       })
     }
 
-    // Insert batch
-    const { data, error } = await supabase.from('products').insert(finalProducts).select()
-    if (error) throw error
-
-    // Optionally insert a dummy image for each product
-    const imagesToInsert = (data || []).map((prod) => ({
-      product_id: prod.id,
-      image_url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
-      sort_order: 0,
-    }))
-
-    await supabase.from('product_images').insert(imagesToInsert)
+    if (finalProducts.length > 0) {
+      await db.collection('products').insertMany(finalProducts as any)
+    }
 
     revalidatePath('/products')
     return { success: true, message: `Successfully imported ${finalProducts.length} products!` }
