@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-serif: var(--font-playfair), ui-serif, Georgia;
+  
+  --color-gold-50: #fbf7ee;
+  --color-gold-100: #f4ea2f;
+  --color-gold-200: #e8d09f;
+  --color-gold-300: #dbb374;
+  --color-gold-400: #ce9b52;
+  --color-gold-500: #c5a880; /* Primary gold/champagne */
+  --color-gold-600: #b5956a;
+  --color-gold-700: #9e7d53;
+  --color-gold-800: #7d603f;
+  --color-gold-900: #55402a;
+
+  --color-bronze-500: #a87c53;
+  --color-charcoal-900: #121214;
+  --color-charcoal-950: #0a0a0b;
+}
+
+:root {
+  --background: #fbfaf8;
+  --foreground: #121214;
+  --card: #ffffff;
+  --card-foreground: #121214;
+  --primary: #b5956a;
+  --primary-foreground: #ffffff;
+  --secondary: #a87c53;
+  --secondary-foreground: #ffffff;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #e8d09f;
+  --accent-foreground: #121214;
+  --border: #e4e4e7;
+  --ring: #b5956a;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #121214;
+  --card-foreground: #f4f4f5;
+  --primary: #c5a880;
+  --primary-foreground: #09090b;
+  --secondary: #a87c53;
+  --secondary-foreground: #ffffff;
+  --muted: #1c1c1f;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #f4f4f5;
+  --border: #27272a;
+  --ring: #c5a880;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-panel {
+  background: rgba(18, 18, 20, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Luxury Custom Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
