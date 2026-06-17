@@ -5,10 +5,6 @@ import { getProjects } from '@/services/api'
 import { Project } from '@/types/database'
 import { MapPin, Trophy, ShieldAlert } from 'lucide-react'
 
-export const metadata = {
-  title: 'Completed Projects Portfolio | Sangli Ceramica',
-  description: 'View our portfolio of luxury villas, commercial spaces, and premium residential projects completed using Sangli Ceramica tiles and bath fittings.',
-}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])

@@ -8,12 +8,7 @@ import { submitContact } from '@/app/actions/formActions'
 import { getSettings, getStores } from '@/services/api'
 import { Settings, StoreLocation } from '@/types/database'
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader2, Sparkles, Map } from 'lucide-react'
-import { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Contact Us & Showroom Locations | Sangli Ceramica',
-  description: 'Get in touch with Sangli Ceramica. Find our showroom coordinates, direct phone numbers, and working hours for premium tile inquiries.',
-}
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<Settings | null>(null)

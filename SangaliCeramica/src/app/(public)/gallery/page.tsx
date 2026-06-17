@@ -5,12 +5,7 @@ import { getGalleryItems } from '@/services/api'
 import { GalleryItem } from '@/types/database'
 import { Image, Layers, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'Inspiration Gallery | Sangli Ceramica',
-  description: 'Explore high-resolution photos of our premium tiles, bathroom fixtures, and design ideas. See how Sangli Ceramica products look in real settings.',
-}
 
 const filterCategories = ['All', 'Living Room', 'Bathroom', 'Lobby', 'Kitchen']
 
