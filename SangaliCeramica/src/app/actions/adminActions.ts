@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { getDb } from '@/lib/mongodb'
 import { randomUUID } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
+import { StoreLocation } from '@/types/database'
 
 export async function adminLogin(formData: any) {
   const email = formData.email
