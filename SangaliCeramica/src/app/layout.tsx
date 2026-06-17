@@ -13,6 +13,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+}
+
 export const metadata: Metadata = {
   title: "Sangli Ceramica | Premium Tiles, Sanitary Ware & Bath Fittings",
   description: "Sangli Ceramica is Maharashtra's premier tiles and bathroom showroom, showcasing high-end floor tiles, wall cladding, sanitary ware, and bath fittings from top global brands.",
@@ -28,7 +33,6 @@ export const metadata: Metadata = {
     "Jaquar Faucets Sangli"
   ],
   authors: [{ name: "Sangli Ceramica" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
 }
 

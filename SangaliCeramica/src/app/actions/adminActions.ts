@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { getDb } from '@/lib/mongodb'
 import { randomUUID } from 'crypto'
+import { createClient } from '@/lib/supabase/server'
 
 export async function adminLogin(formData: any) {
   const email = formData.email
@@ -13,6 +14,24 @@ export async function adminLogin(formData: any) {
   const expectedEmail = process.env.ADMIN_EMAIL || 'admin@sangliceramica.com'
   const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123'
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  
+  if (supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('placeholder')) {
+    // Live Supabase Authentication
+    const supabase = await createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true, message: 'Successfully logged in.' }
+  }
+
+  // Offline Preview Mode Fallback
   if (email === expectedEmail && password === expectedPassword) {
     const cookieStore = await cookies()
     cookieStore.set('sb-admin-preview-session', 'true', {
@@ -31,6 +50,12 @@ export async function adminLogin(formData: any) {
 }
 
 export async function adminLogout() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  if (supabaseUrl && !supabaseUrl.includes('placeholder')) {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+  }
+  
   const cookieStore = await cookies()
   cookieStore.delete('sb-admin-preview-session')
   return { success: true }
@@ -343,5 +368,100 @@ export async function bulkUploadProductsCSV(csvText: string) {
   } catch (error: any) {
     console.error('Bulk upload error:', error)
     return { success: false, error: error.message || 'Failed to bulk import products.' }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// IMAGE UPLOAD (Server-Side)
+// ----------------------------------------------------------------------------
+export async function uploadProductImageAction(formData: FormData) {
+  const file = formData.get('file') as File
+  if (!file) {
+    return { success: false, error: 'No file provided' }
+  }
+
+  const supabase = await createClient()
+
+  // Verify the user is authenticated on the server
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, error: 'Unauthorized. Please log in again.' }
+  }
+
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+  const filePath = `${fileName}`
+
+  // Ensure this file uses the arrayBuffer since standard Node.js fetch inside Supabase handles arrayBuffer better than raw File objects in some Next.js environments
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = new Uint8Array(arrayBuffer)
+
+  const { data, error } = await supabase.storage
+    .from('product-images')
+    .upload(filePath, buffer, {
+      upsert: true,
+      contentType: file.type || 'image/jpeg',
+    })
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('product-images')
+    .getPublicUrl(filePath)
+
+  return { success: true, url: publicUrlData.publicUrl }
+}
+
+export async function createStoreAction(payload: Omit<StoreLocation, 'id' | 'created_at'>) {
+  try {
+    const db = await getDb()
+    if (!db) throw new Error('Database not configured')
+
+    const newId = randomUUID()
+    const store: StoreLocation = {
+      ...payload,
+      id: newId,
+      created_at: new Date().toISOString(),
+    }
+
+    await db.collection('stores').insertOne(store)
+    revalidatePath('/admin/stores')
+    revalidatePath('/contact')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error creating store:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updateStoreAction(id: string, payload: Partial<StoreLocation>) {
+  try {
+    const db = await getDb()
+    if (!db) throw new Error('Database not configured')
+
+    await db.collection('stores').updateOne({ id }, { $set: payload })
+    revalidatePath('/admin/stores')
+    revalidatePath('/contact')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error updating store:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function deleteStoreAction(id: string) {
+  try {
+    const db = await getDb()
+    if (!db) throw new Error('Database not configured')
+
+    await db.collection('stores').deleteOne({ id })
+    revalidatePath('/admin/stores')
+    revalidatePath('/contact')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error deleting store:', error)
+    return { success: false, error: error.message }
   }
 }

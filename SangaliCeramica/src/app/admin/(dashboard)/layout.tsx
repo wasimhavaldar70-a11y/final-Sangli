@@ -11,6 +11,7 @@ import {
   LogOut,
   Globe,
   Database,
+  Store,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { adminLogout } from '@/app/actions/adminActions'
@@ -22,6 +23,7 @@ const sidebarLinks = [
   { name: 'Products Catalog', href: '/admin/products', icon: Package },
   { name: 'Customer Inquiries', href: '/admin/inquiries', icon: MessageSquare },
   { name: 'Showroom Bookings', href: '/admin/appointments', icon: Calendar },
+  { name: 'Store Locations', href: '/admin/stores', icon: Store },
   { name: 'Store Settings', href: '/admin/settings', icon: SettingsIcon },
 ]
 

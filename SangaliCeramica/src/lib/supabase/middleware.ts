@@ -24,7 +24,7 @@ export async function updateSession(request: NextRequest) {
           return NextResponse.redirect(url)
         }
       } else {
-        if (isAskingLogin) {
+        if (isAskingLogin || request.nextUrl.pathname === '/admin') {
           const url = request.nextUrl.clone()
           url.pathname = '/admin/dashboard'
           return NextResponse.redirect(url)
@@ -77,7 +77,7 @@ export async function updateSession(request: NextRequest) {
 
       const isAdmin = profile?.role === 'admin'
 
-      if (isAskingLogin && isAdmin) {
+      if ((isAskingLogin || request.nextUrl.pathname === '/admin') && isAdmin) {
         // Already logged in as admin, redirect to dashboard
         const url = request.nextUrl.clone()
         url.pathname = '/admin/dashboard'

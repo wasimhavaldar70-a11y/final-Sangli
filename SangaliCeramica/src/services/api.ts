@@ -128,6 +128,19 @@ export async function getSettings(): Promise<Settings> {
   }
 }
 
+export async function getStores(): Promise<import('@/types/database').StoreLocation[]> {
+  if (!(await isDbConfigured())) return []
+  try {
+    const db = await getMongoDb()
+    if (!db) return []
+    const stores = await db.collection('stores').find({}).sort({ created_at: -1 }).toArray()
+    return stores.map(doc => normalizeDoc<import('@/types/database').StoreLocation>(doc))
+  } catch (error) {
+    console.error('Failed to fetch stores from MongoDB:', error)
+    return []
+  }
+}
+
 export async function getCategories(): Promise<Category[]> {
   if (!(await isDbConfigured())) return FALLBACK_CATEGORIES
   try {

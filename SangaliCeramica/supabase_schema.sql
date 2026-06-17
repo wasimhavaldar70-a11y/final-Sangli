@@ -221,61 +221,61 @@ CREATE POLICY "Allow admins to update profiles" ON public.users
 CREATE POLICY "Allow public read access to categories" ON public.categories
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to categories" ON public.categories
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.3 Products policies
 CREATE POLICY "Allow public read access to products" ON public.products
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to products" ON public.products
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.4 Product Images policies
 CREATE POLICY "Allow public read access to product images" ON public.product_images
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to product images" ON public.product_images
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.5 Inquiries policies
 CREATE POLICY "Allow anyone to insert an inquiry" ON public.inquiries
   FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow admins full access to inquiries" ON public.inquiries
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.6 Appointments policies
 CREATE POLICY "Allow anyone to insert an appointment" ON public.appointments
   FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow admins full access to appointments" ON public.appointments
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.7 Testimonials policies
 CREATE POLICY "Allow public read access to testimonials" ON public.testimonials
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to testimonials" ON public.testimonials
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.8 Gallery policies
 CREATE POLICY "Allow public read access to gallery" ON public.gallery
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to gallery" ON public.gallery
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.9 Projects policies
 CREATE POLICY "Allow public read access to projects" ON public.projects
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to projects" ON public.projects
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.10 Blogs policies
 CREATE POLICY "Allow public read access to published blogs" ON public.blogs
   FOR SELECT USING (published = true OR is_admin());
 CREATE POLICY "Allow admins full access to blogs" ON public.blogs
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- 5.11 Settings policies
 CREATE POLICY "Allow public read access to settings" ON public.settings
   FOR SELECT USING (true);
 CREATE POLICY "Allow admins full access to settings" ON public.settings
-  ALL USING (is_admin());
+  FOR ALL USING (is_admin());
 
 -- =========================================================================
 -- 6. SEED INITIAL DATA
@@ -307,8 +307,8 @@ INSERT INTO public.products (id, category_id, name, slug, description, price, br
 ('c2222222-2222-2222-2222-222222222222'::uuid, 'b1111111-1111-1111-1111-111111111111'::uuid, 'Armani Bronze', 'armani-bronze', 'Luxurious dark brown marble-look tiles with fine crystalline webs.', 1450, 'Kajaria Eternity', '800x1600 mm', 'Super Glossy', 'Glazed Vitrified', 'In Stock', true),
 ('c3333333-3333-3333-3333-333333333333'::uuid, 'b2222222-2222-2222-2222-222222222222'::uuid, 'Hexa Deco Mint', 'hexa-deco-mint', 'Modern hexagonal ceramic tiles in mint green color, perfect for kitchen splashbacks.', 850, 'Simpolo Ceramica', '300x300 mm', 'Satin / Matt', 'Ceramic', 'In Stock', false),
 ('c4444444-4444-4444-4444-444444444444'::uuid, 'b3333333-3333-3333-3333-333333333333'::uuid, 'Matte Black Smart Closet', 'matte-black-smart-closet', 'Luxury intelligent wall-hung toilet featuring auto-flush, seat heating, and bidet controls.', 45000, 'TOTO', 'Standard', 'Matte', 'Ceramic Vitreous China', 'In Stock', true),
-('c5555555-5555-5555-5555-555555555555'::uuid, 'b4444444-4444-4444-4444-444444444444'::uuid, 'Rose Gold Basin Mixer', 'rose-gold-basin-mixer', 'Sophisticated brass basin faucet with a durable rose gold PVD coating.', 6500, 'Jaquar Artize', 'PVD Mirror Finish', 'Solid Brass', 'In Stock', true),
-('c6666666-6666-6666-6666-666666666666'::uuid, 'b5555555-5555-5555-5555-555555555555'::uuid, 'Stone Grip Grey Parking', 'stone-grip-grey-parking', 'Heavy-duty 16mm vitrified tiles with high slip-resistance for driveways.', 620, 'Kajaria', 'Rough / Anti-skid', 'Vitrified', 'In Stock', false)
+('c5555555-5555-5555-5555-555555555555'::uuid, 'b4444444-4444-4444-4444-444444444444'::uuid, 'Rose Gold Basin Mixer', 'rose-gold-basin-mixer', 'Sophisticated brass basin faucet with a durable rose gold PVD coating.', 6500, 'Jaquar Artize', NULL, 'PVD Mirror Finish', 'Solid Brass', 'In Stock', true),
+('c6666666-6666-6666-6666-666666666666'::uuid, 'b5555555-5555-5555-5555-555555555555'::uuid, 'Stone Grip Grey Parking', 'stone-grip-grey-parking', 'Heavy-duty 16mm vitrified tiles with high slip-resistance for driveways.', 620, 'Kajaria', NULL, 'Rough / Anti-skid', 'Vitrified', 'In Stock', false)
 ON CONFLICT (slug) DO NOTHING;
 
 -- 6.4 Product Images

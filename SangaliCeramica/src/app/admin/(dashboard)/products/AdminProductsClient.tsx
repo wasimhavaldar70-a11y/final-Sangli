@@ -19,8 +19,10 @@ import {
   updateProductAction,
   deleteProductAction,
   bulkUploadProductsCSV,
+  uploadProductImageAction,
 } from '@/app/actions/adminActions'
 import { formatPrice, cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 interface AdminProductsClientProps {
   categories: Category[]
@@ -56,6 +58,7 @@ export default function AdminProductsClient({
   const [stockStatus, setStockStatus] = useState<'In Stock' | 'Out of Stock' | 'Call for Availability'>('In Stock')
   const [featured, setFeatured] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [description, setDescription] = useState('')
 
   const resetForm = () => {
@@ -69,8 +72,29 @@ export default function AdminProductsClient({
     setStockStatus('In Stock')
     setFeatured(false)
     setImageUrl('')
+    setImageFile(null)
     setDescription('')
     setErrorMsg('')
+  }
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMsg('Image size must be less than 2MB.')
+      return
+    }
+
+    setImageFile(file)
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        setImageUrl(reader.result)
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleOpenCreate = () => {
@@ -91,6 +115,7 @@ export default function AdminProductsClient({
     setStockStatus(prod.stock_status)
     setFeatured(prod.featured)
     setImageUrl(prod.product_images?.[0]?.image_url || '')
+    setImageFile(null)
     setDescription(prod.description || '')
     setErrorMsg('')
     setShowFormModal(true)
@@ -101,21 +126,38 @@ export default function AdminProductsClient({
     setErrorMsg('')
     setSuccessMsg('')
 
-    const payload = {
-      category_id: categoryId,
-      name,
-      price: parseFloat(price),
-      brand,
-      size,
-      finish,
-      material,
-      stock_status: stockStatus,
-      featured,
-      image_url: imageUrl,
-      description,
-    }
-
     startTransition(async () => {
+      let finalImageUrl = imageUrl
+
+      // Upload file if selected using Server Action
+      if (imageFile) {
+        const formData = new FormData()
+        formData.append('file', imageFile)
+
+        const uploadRes = await uploadProductImageAction(formData)
+
+        if (!uploadRes.success || !uploadRes.url) {
+          setErrorMsg(`Image upload failed: ${uploadRes.error}`)
+          return
+        }
+        
+        finalImageUrl = uploadRes.url
+      }
+
+      const payload = {
+        category_id: categoryId,
+        name,
+        price: parseFloat(price),
+        brand,
+        size,
+        finish,
+        material,
+        stock_status: stockStatus,
+        featured,
+        image_url: finalImageUrl,
+        description,
+      }
+
       let res
       if (editingProduct) {
         res = await updateProductAction(editingProduct.id, payload)
@@ -133,8 +175,8 @@ export default function AdminProductsClient({
                 ? {
                     ...p,
                     ...payload,
-                    product_images: imageUrl
-                      ? [{ id: 'img', product_id: p.id, image_url: imageUrl, sort_order: 0, created_at: '' }]
+                    product_images: finalImageUrl
+                      ? [{ id: 'img', product_id: p.id, image_url: finalImageUrl, sort_order: 0, created_at: '' }]
                       : p.product_images,
                   }
                 : p
@@ -150,8 +192,8 @@ export default function AdminProductsClient({
               created_at: new Date().toISOString(),
               ...payload,
               categories: category,
-              product_images: imageUrl
-                ? [{ id: 'img', product_id: newId, image_url: imageUrl, sort_order: 0, created_at: '' }]
+              product_images: finalImageUrl
+                ? [{ id: 'img', product_id: newId, image_url: finalImageUrl, sort_order: 0, created_at: '' }]
                 : [],
             } as any,
             ...prev,
@@ -492,16 +534,59 @@ export default function AdminProductsClient({
                 </div>
               </div>
 
-              {/* Image URL */}
-              <div className="space-y-1.5">
-                <label className="text-zinc-400 font-semibold uppercase tracking-wider">Showcase Image URL</label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/... or Supabase storage link"
-                  className="w-full bg-zinc-950 border border-zinc-855 text-white rounded-xl px-3 py-2.5 focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-zinc-700"
-                />
+              {/* Image URL & File Upload */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1.5">
+                  <label className="text-zinc-400 font-semibold uppercase tracking-wider">Showcase Image</label>
+                  <span className="text-[10px] text-zinc-550 font-normal">Paste URL OR upload a local file</span>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* File Selector */}
+                  <div className="relative group flex flex-col justify-center items-center p-4 bg-zinc-950 border border-dashed border-zinc-850 hover:border-accent/35 rounded-2xl transition-all text-center">
+                    <Upload className="h-5 w-5 text-zinc-650 group-hover:text-accent mb-2 transition-colors" />
+                    <span className="text-[10px] text-zinc-450 font-medium group-hover:text-zinc-300">Choose Image File</span>
+                    <span className="text-[9px] text-zinc-600 mt-1">Max 2MB (PNG, JPG)</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                  </div>
+
+                  {/* URL input / Preview */}
+                  <div className="space-y-2 flex flex-col justify-between">
+                    <input
+                      type="url"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="Or paste direct image link URL..."
+                      className="w-full bg-zinc-950 border border-zinc-850 text-white rounded-xl px-3 py-2.5 focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-zinc-700 text-xs"
+                    />
+                    
+                    {imageUrl && (
+                      <div className="flex items-center gap-2.5 p-2 bg-zinc-950/40 rounded-xl border border-zinc-850">
+                        <img
+                          src={imageUrl}
+                          alt="Preview"
+                          className="h-10 w-10 rounded-lg object-cover bg-zinc-950 border border-zinc-800"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-zinc-450 uppercase font-bold tracking-wider">Preview Selected</p>
+                          <p className="text-[9px] text-zinc-650 truncate max-w-[140px]">{imageUrl}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setImageUrl(''); setImageFile(null); }}
+                          className="text-zinc-600 hover:text-red-400 text-[10px] font-bold uppercase transition-colors px-1 cursor-pointer"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Description */}

@@ -5,17 +5,29 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { contactSchema, ContactFormInput } from '@/lib/validation/schemas'
 import { submitContact } from '@/app/actions/formActions'
-import { getSettings } from '@/services/api'
-import { Settings } from '@/types/database'
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader2, Sparkles } from 'lucide-react'
+import { getSettings, getStores } from '@/services/api'
+import { Settings, StoreLocation } from '@/types/database'
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader2, Sparkles, Map } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Contact Us & Showroom Locations | Sangli Ceramica',
+  description: 'Get in touch with Sangli Ceramica. Find our showroom coordinates, direct phone numbers, and working hours for premium tile inquiries.',
+}
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
+  const [stores, setStores] = useState<StoreLocation[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [selectedStoreMap, setSelectedStoreMap] = useState<string>('')
 
   useEffect(() => {
-    getSettings().then(setSettings)
+    getSettings().then(s => {
+      setSettings(s)
+      setSelectedStoreMap(s?.google_map || '')
+    })
+    getStores().then(setStores)
   }, [])
 
   const {
@@ -54,10 +66,21 @@ export default function ContactPage() {
     }
   }
 
-  const websiteName = settings?.website_name || 'Sangli Ceramica'
-  const address = settings?.address || 'Sangli-Miraj Road, Vishrambag, Sangli, Maharashtra'
-  const phone = settings?.phone || '+91 98765 43210'
-  const email = settings?.email || 'info@sangliceramica.com'
+  const defaultWebsiteName = settings?.website_name || 'Sangli Ceramica'
+  const defaultAddress = settings?.address || 'Sangli-Miraj Road, Vishrambag, Sangli, Maharashtra'
+  const defaultPhone = settings?.phone || '+91 98765 43210'
+  const defaultEmail = settings?.email || 'info@sangliceramica.com'
+
+  const displayStores = stores.length > 0 ? stores : [{
+    id: 'default',
+    name: 'Main Showroom',
+    address: defaultAddress,
+    phone: defaultPhone,
+    whatsapp: settings?.whatsapp || '',
+    email: defaultEmail,
+    google_map_url: settings?.google_map || '',
+    created_at: new Date().toISOString()
+  }]
 
   return (
     <div className="min-h-screen py-24 bg-zinc-950 space-y-16">
@@ -78,56 +101,70 @@ export default function ContactPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Contact Info Details - 5 cols */}
         <div className="lg:col-span-5 space-y-8">
-          <div className="bg-zinc-900/40 p-8 rounded-3xl border border-zinc-850 space-y-6 glass-panel">
-            <h2 className="text-xl font-bold text-white border-l-2 border-accent pl-3">
-              Showroom Coordinates
-            </h2>
+          
+          {displayStores.map((store, index) => (
+            <div key={store.id} className="bg-zinc-900/40 p-8 rounded-3xl border border-zinc-850 space-y-6 glass-panel relative group">
+              <h2 className="text-xl font-bold text-white border-l-2 border-accent pl-3">
+                {store.name}
+              </h2>
+              
+              <button 
+                onClick={() => setSelectedStoreMap(store.google_map_url)}
+                className="absolute top-6 right-6 text-xs bg-zinc-800 hover:bg-accent text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+              >
+                <Map className="h-3.5 w-3.5" /> View Map
+              </button>
 
-            <div className="space-y-6 text-sm">
-              <div className="flex gap-4">
-                <MapPin className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-white">Showroom Address</h4>
-                  <p className="text-zinc-400 mt-1 leading-relaxed">{address}</p>
+              <div className="space-y-6 text-sm">
+                <div className="flex gap-4">
+                  <MapPin className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-white">Address</h4>
+                    <p className="text-zinc-400 mt-1 leading-relaxed">{store.address}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex gap-4">
-                <Phone className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-white">Direct Phone</h4>
-                  <p className="text-zinc-400 mt-1">{phone}</p>
+                <div className="flex gap-4">
+                  <Phone className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-white">Direct Phone</h4>
+                    <p className="text-zinc-400 mt-1">{store.phone} {store.whatsapp ? `(WA: ${store.whatsapp})` : ''}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex gap-4">
-                <Mail className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-white">Email Enquiries</h4>
-                  <p className="text-zinc-400 mt-1 break-all">{email}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <Clock className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-white">Working Hours</h4>
-                  <p className="text-zinc-400 mt-1">Monday - Saturday: 09:30 AM - 08:30 PM</p>
-                  <p className="text-zinc-550 mt-0.5 text-xs">Sunday: Closed</p>
-                </div>
+                {store.email && (
+                  <div className="flex gap-4">
+                    <Mail className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-white">Email Enquiries</h4>
+                      <p className="text-zinc-400 mt-1 break-all">{store.email}</p>
+                    </div>
+                  </div>
+                )}
+                
+                {index === 0 && (
+                  <div className="flex gap-4">
+                    <Clock className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-white">Working Hours</h4>
+                      <p className="text-zinc-400 mt-1">Monday - Saturday: 09:30 AM - 08:30 PM</p>
+                      <p className="text-zinc-550 mt-0.5 text-xs">Sunday: Closed</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          ))}
 
           {/* Embedded Google Map */}
           <div className="h-72 rounded-3xl overflow-hidden border border-zinc-850 shadow-xl bg-zinc-900">
             <iframe
-              src={settings?.google_map || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3817.9626359570183!2d74.603348!3d16.852923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1230000000001%3A0x6b4fd4ef9c5f884f!2sSangli!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin'}
+              src={selectedStoreMap || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3817.9626359570183!2d74.603348!3d16.852923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1230000000001%3A0x6b4fd4ef9c5f884f!2sSangli!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin'}
               className="w-full h-full border-none grayscale invert contrast-[1.15]"
               allowFullScreen={true}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Sangli Ceramica Map coordinates"
+              title="Store Map coordinates"
             ></iframe>
           </div>
         </div>

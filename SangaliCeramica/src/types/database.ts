@@ -118,3 +118,14 @@ export interface Settings {
   google_map: string
   created_at: string
 }
+
+export interface StoreLocation {
+  id: string
+  name: string
+  address: string
+  phone: string
+  whatsapp: string
+  email: string | null
+  google_map_url: string
+  created_at: string
+}

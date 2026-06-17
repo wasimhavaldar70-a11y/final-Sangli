@@ -6,6 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { appointmentSchema, AppointmentFormInput } from '@/lib/validation/schemas'
 import { submitAppointment } from '@/app/actions/formActions'
 import { Calendar, User, Phone, Mail, FileText, CheckCircle, Loader2, Sparkles } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Book a VIP Showroom Visit | Sangli Ceramica',
+  description: 'Schedule a personalized VIP visit to the Sangli Ceramica showroom. Meet our design consultants and get custom bulk discounts for commercial or home renovations.',
+}
 
 export default function BookAppointmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)

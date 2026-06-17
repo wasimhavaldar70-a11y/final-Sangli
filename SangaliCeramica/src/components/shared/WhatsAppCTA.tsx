@@ -13,9 +13,7 @@ export default function WhatsAppCTA() {
   }, [])
 
   const whatsappNum = settings?.whatsapp || '919876543210'
-  const message = encodeURIComponent(
-    'Hello Sangli Ceramica, I am interested in your premium tile collections and sanitary ware. Please share your latest catalog.'
-  )
+  const message = encodeURIComponent('whatsapp msg')
   const whatsappUrl = `https://wa.me/${whatsappNum}?text=${message}`
 
   return (

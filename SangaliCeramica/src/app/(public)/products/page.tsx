@@ -1,6 +1,12 @@
 import { getCategories, getProducts } from '@/services/api'
+import { Suspense } from 'react'
 import ProductsClient from './ProductsClient'
 import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Premium Tiles & Ceramics Catalog | Sangli Ceramica',
+  description: 'Browse our extensive catalog of Italian tiles, vitrified flooring, luxury sanitary ware, and modern bath fittings. Find the perfect design for your home.',
+}
 
 interface ProductsPageProps {
   searchParams: Promise<{
