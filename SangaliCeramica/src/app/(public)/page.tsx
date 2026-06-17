@@ -106,7 +106,7 @@ export default function HomePage() {
       </section>
 
       {/* SECTION 2: DYNAMIC CATEGORIES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 !mt-12 md:!mt-16">
         <div className="text-center space-y-3">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
             Exclusive Collections
