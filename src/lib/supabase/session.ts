@@ -61,10 +61,18 @@ export async function updateSession(request: NextRequest) {
 
   if (isAskingAdminRoute) {
     if (!user) {
-      if (!isAskingLogin) {
+      // Check if they used the backdoor/preview login
+      const previewSession = request.cookies.get('sb-admin-preview-session')?.value === 'true'
+      
+      if (!previewSession && !isAskingLogin) {
         // Redirect anonymous users trying to access admin dashboards to login page
         const url = request.nextUrl.clone()
         url.pathname = '/admin/login'
+        return NextResponse.redirect(url)
+      } else if (previewSession && (isAskingLogin || request.nextUrl.pathname === '/admin')) {
+        // Already logged in via backdoor, redirect to dashboard
+        const url = request.nextUrl.clone()
+        url.pathname = '/admin/dashboard'
         return NextResponse.redirect(url)
       }
     } else {
