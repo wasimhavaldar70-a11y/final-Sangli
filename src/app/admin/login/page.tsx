@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col justify-center items-center px-4 relative">
-      <div className="absolute inset-0 bg-cover bg-center opacity-5 pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80')` }}></div>
+      <div className="absolute inset-0 bg-cover bg-center opacity-5 pointer-events-none" style={{ backgroundImage: `url('')` }}></div>
 
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl relative z-10 glass-panel space-y-6">
         

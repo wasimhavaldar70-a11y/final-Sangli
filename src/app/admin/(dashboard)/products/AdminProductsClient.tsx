@@ -317,7 +317,7 @@ export default function AdminProductsClient({
                   const image =
                     prod.product_images && prod.product_images.length > 0
                       ? prod.product_images[0].image_url
-                      : 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80'
+                      : ''
                   const categoryName =
                     categories.find((c) => c.id === prod.category_id)?.name || 'Tiles'
 

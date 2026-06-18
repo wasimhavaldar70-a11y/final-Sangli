@@ -41,35 +41,35 @@ export default function HomePage() {
       badge: 'Floor Tiles',
       title: 'Redefine Luxury for Your Living Floors',
       desc: 'Premium glazed vitrified tiles and grand Italian-replica slabs for elegant living spaces.',
-      image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1600&q=80',
+      image: '',
       link: '/products?category=floor-tiles'
     },
     {
       badge: 'Wall Tiles',
       title: 'Exquisite Feature & Cladding Walls',
       desc: 'Stylish wall tiles for kitchens, bathrooms, and sophisticated design features.',
-      image: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1600&q=80',
+      image: '',
       link: '/products?category=wall-tiles'
     },
     {
       badge: 'Sanitary Ware',
       title: 'Premium Closets & Designer Basins',
       desc: 'Premium designer closets, wash basins, and elegant vanities for modern bath suites.',
-      image: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1600&q=80',
+      image: '',
       link: '/products?category=sanitary-ware'
     },
     {
       badge: 'Bath Fittings',
       title: 'Elegant Faucets & Showers',
       desc: 'Elegant faucets, luxury showers, and designer bath accessories that stand out.',
-      image: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=1600&q=80',
+      image: '',
       link: '/products?category=bath-fittings'
     },
     {
       badge: 'Outdoor & Parking',
       title: 'Heavy-Duty Pavers & Parking Slabs',
       desc: 'Heavy-duty exterior tiles designed to withstand high weather loads and parking stress.',
-      image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1600&q=80',
+      image: '',
       link: '/products?category=outdoor-parking-tiles'
     }
   ]
@@ -274,7 +274,7 @@ export default function HomePage() {
                   const image =
                     prod.product_images && prod.product_images.length > 0
                       ? prod.product_images[0].image_url
-                      : 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80'
+                      : ''
                   return (
                     <Link
                       key={prod.id}

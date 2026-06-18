@@ -41,7 +41,7 @@ export default function AboutPage() {
 
         <div className="h-96 rounded-2xl overflow-hidden border border-zinc-800 shadow-xl bg-zinc-900">
           <img
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80"
+            src=""
             alt="Sangli Ceramica Premium Showroom Display"
             className="w-full h-full object-cover grayscale brightness-90 hover:grayscale-0 transition-all duration-500"
           />

@@ -355,7 +355,7 @@ export async function bulkUploadProductsCSV(csvText: string) {
           {
             id: randomUUID(),
             product_id: prodId,
-            image_url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
+            image_url: '',
             sort_order: 0,
             created_at: new Date().toISOString(),
           },
@@ -390,7 +390,7 @@ export async function uploadProductImageAction(formData: FormData) {
     // Return a placeholder image URL when in preview mode
     return { 
       success: true, 
-      url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80' 
+      url: '' 
     }
   }
 
@@ -405,7 +405,7 @@ export async function uploadProductImageAction(formData: FormData) {
       // Fallback: If logged in via override but without a Supabase session
       return { 
         success: true, 
-        url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80' 
+        url: '' 
       }
     }
     return { success: false, error: 'Unauthorized. Please log in again.' }

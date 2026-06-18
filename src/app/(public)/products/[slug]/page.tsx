@@ -49,7 +49,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsProps
   const defaultImage =
     product.product_images && product.product_images.length > 0
       ? product.product_images[0].image_url
-      : 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80'
+      : ''
 
   const whatsappMessage = encodeURIComponent(
     `Hello Sangli Ceramica, I want to inquire about the product: ${product.name} (Brand: ${product.brand}, Size: ${product.size || 'N/A'}, Price: ${formatPrice(product.price)}). Please share catalog details and availability.`
@@ -174,7 +174,7 @@ export default async function ProductDetailsPage({ params }: ProductDetailsProps
                 const image =
                   prod.product_images && prod.product_images.length > 0
                     ? prod.product_images[0].image_url
-                    : 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80'
+                    : ''
                 return (
                   <Link
                     key={prod.id}

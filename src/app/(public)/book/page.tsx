@@ -51,7 +51,7 @@ export default function BookAppointmentPage() {
 
   return (
     <div className="min-h-screen py-24 bg-zinc-950 flex flex-col justify-center items-center px-4">
-      <div className="absolute inset-0 bg-cover bg-center opacity-5 pointer-events-none" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80')` }}></div>
+      <div className="absolute inset-0 bg-cover bg-center opacity-5 pointer-events-none" style={{ backgroundImage: `url('')` }}></div>
 
       <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-3xl p-8 md:p-10 shadow-2xl relative z-10 glass-panel space-y-8">
         

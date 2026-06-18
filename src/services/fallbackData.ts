@@ -17,7 +17,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
     id: 'b1111111-1111-1111-1111-111111111111',
     name: 'Floor Tiles',
     slug: 'floor-tiles',
-    image_url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     description: 'Premium glazed vitrified tiles for elegant living spaces.',
     created_at: new Date().toISOString()
   },
@@ -25,7 +25,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
     id: 'b2222222-2222-2222-2222-222222222222',
     name: 'Wall Tiles',
     slug: 'wall-tiles',
-    image_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     description: 'Stylish wall tiles for kitchens, bathrooms, and features.',
     created_at: new Date().toISOString()
   },
@@ -33,7 +33,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
     id: 'b3333333-3333-3333-3333-333333333333',
     name: 'Sanitary Ware',
     slug: 'sanitary-ware',
-    image_url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     description: 'Premium designer closets, wash basins, and vanities.',
     created_at: new Date().toISOString()
   },
@@ -41,7 +41,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
     id: 'b4444444-4444-4444-4444-444444444444',
     name: 'Bath Fittings',
     slug: 'bath-fittings',
-    image_url: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     description: 'Elegant faucets, showers, and designer bath accessories.',
     created_at: new Date().toISOString()
   },
@@ -49,7 +49,7 @@ export const FALLBACK_CATEGORIES: Category[] = [
     id: 'b5555555-5555-5555-5555-555555555555',
     name: 'Outdoor & Parking',
     slug: 'outdoor-parking-tiles',
-    image_url: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     description: 'Heavy-duty exterior tiles designed to withstand heavy loads and weather.',
     created_at: new Date().toISOString()
   }
@@ -71,8 +71,8 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: true,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '1', product_id: 'c1111111-1111-1111-1111-111111111111', image_url: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' },
-      { id: '2', product_id: 'c1111111-1111-1111-1111-111111111111', image_url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80', sort_order: 1, created_at: '' }
+      { id: '1', product_id: 'c1111111-1111-1111-1111-111111111111', image_url: '', sort_order: 0, created_at: '' },
+      { id: '2', product_id: 'c1111111-1111-1111-1111-111111111111', image_url: '', sort_order: 1, created_at: '' }
     ]
   },
   {
@@ -90,7 +90,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: true,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '3', product_id: 'c2222222-2222-2222-2222-222222222222', image_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' }
+      { id: '3', product_id: 'c2222222-2222-2222-2222-222222222222', image_url: '', sort_order: 0, created_at: '' }
     ]
   },
   {
@@ -108,7 +108,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: false,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '4', product_id: 'c3333333-3333-3333-3333-333333333333', image_url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' }
+      { id: '4', product_id: 'c3333333-3333-3333-3333-333333333333', image_url: '', sort_order: 0, created_at: '' }
     ]
   },
   {
@@ -126,7 +126,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: true,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '5', product_id: 'c4444444-4444-4444-4444-444444444444', image_url: 'https://images.unsplash.com/photo-1521207418485-99c705420785?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' }
+      { id: '5', product_id: 'c4444444-4444-4444-4444-444444444444', image_url: '', sort_order: 0, created_at: '' }
     ]
   },
   {
@@ -144,7 +144,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: true,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '6', product_id: 'c5555555-5555-5555-5555-555555555555', image_url: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' }
+      { id: '6', product_id: 'c5555555-5555-5555-5555-555555555555', image_url: '', sort_order: 0, created_at: '' }
     ]
   },
   {
@@ -162,7 +162,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     featured: false,
     created_at: new Date().toISOString(),
     product_images: [
-      { id: '7', product_id: 'c6666666-6666-6666-6666-666666666666', image_url: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?auto=format&fit=crop&w=600&q=80', sort_order: 0, created_at: '' }
+      { id: '7', product_id: 'c6666666-6666-6666-6666-666666666666', image_url: '', sort_order: 0, created_at: '' }
     ]
   }
 ]
@@ -174,7 +174,7 @@ export const FALLBACK_TESTIMONIALS: Testimonial[] = [
     designation: 'Architect, Sangli',
     review: 'Sangli Ceramica has an incredible collection of large slab tiles. The designs are premium and their suggestions helped us finalize the floorings for our luxury villa project.',
     rating: 5,
-    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   },
   {
@@ -183,7 +183,7 @@ export const FALLBACK_TESTIMONIALS: Testimonial[] = [
     designation: 'Home Owner, Vishrambag',
     review: 'I bought my bathroom sanitary ware and rose gold faucets from here. It has been 2 years and everything functions perfectly. Highly recommend their high-end Jaquar fittings!',
     rating: 5,
-    image_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   },
   {
@@ -192,16 +192,16 @@ export const FALLBACK_TESTIMONIALS: Testimonial[] = [
     designation: 'Builder, Patil Developers',
     review: 'Reliable pricing, prompt delivery, and highly professional staff. We source all our tiles in bulk for commercial projects in Sangli from them.',
     rating: 5,
-    image_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   }
 ]
 
 export const FALLBACK_GALLERY: GalleryItem[] = [
-  { id: '1', title: 'Modern Living Room Slab Tiles', image_url: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&w=600&q=80', category: 'Living Room', created_at: '' },
-  { id: '2', title: 'Premium Bathroom with Closet', image_url: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=600&q=80', category: 'Bathroom', created_at: '' },
-  { id: '3', title: 'Lobby Entrance Slab Work', image_url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=600&q=80', category: 'Lobby', created_at: '' },
-  { id: '4', title: 'Modern Kitchen Backsplash', image_url: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80', category: 'Kitchen', created_at: '' }
+  { id: '1', title: 'Modern Living Room Slab Tiles', image_url: '', category: 'Living Room', created_at: '' },
+  { id: '2', title: 'Premium Bathroom with Closet', image_url: '', category: 'Bathroom', created_at: '' },
+  { id: '3', title: 'Lobby Entrance Slab Work', image_url: '', category: 'Lobby', created_at: '' },
+  { id: '4', title: 'Modern Kitchen Backsplash', image_url: '', category: 'Kitchen', created_at: '' }
 ]
 
 export const FALLBACK_PROJECTS: Project[] = [
@@ -210,7 +210,7 @@ export const FALLBACK_PROJECTS: Project[] = [
     title: 'The White House Villa',
     description: 'Complete flooring work with 800x1600mm Statuario slabs, luxury bathrooms, and modern elevation cladding.',
     location: 'Vishrambag, Sangli',
-    image_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   },
   {
@@ -218,7 +218,7 @@ export const FALLBACK_PROJECTS: Project[] = [
     title: 'Heights Commercial Complex',
     description: 'High-traffic parking tiles and vitrified corridors for a 5-storey shopping and office space.',
     location: 'Miraj, Sangli',
-    image_url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   },
   {
@@ -226,7 +226,7 @@ export const FALLBACK_PROJECTS: Project[] = [
     title: 'Patil Residence Bathroom Reno',
     description: 'Retrofitting bathroom with smart sanitaries, wall-hung items, and matching grey terrazzo theme.',
     location: 'South Shivaji Nagar, Sangli',
-    image_url: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=600&q=80',
+    image_url: '',
     created_at: new Date().toISOString()
   }
 ]
@@ -237,7 +237,7 @@ export const FALLBACK_BLOGS: Blog[] = [
     title: 'How to Choose the Perfect Tiles for Your Living Room',
     slug: 'how-to-choose-living-room-tiles',
     content: 'Choosing the right tiles for your living room is one of the most critical aspects of interior design. Large format glazed vitrified tiles (GVT) in sizes like 800x1600mm are extremely popular today as they reduce grout lines and make the space look massive. Light colors like white, beige, and light grey reflect more light, making your room brighter. For a premium look, you can select marble replicas like Royal Statuario or Carrara White.',
-    featured_image: 'https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?auto=format&fit=crop&w=600&q=80',
+    featured_image: '',
     published: true,
     created_at: new Date().toISOString()
   },
@@ -246,7 +246,7 @@ export const FALLBACK_BLOGS: Blog[] = [
     title: '5 Bathroom Sanitary Ware Trends in 2026',
     slug: 'bathroom-sanitary-ware-trends-2026',
     content: 'Bathroom designs have evolved from pure utility to premium personal wellness sanctuaries. Smart toilets with auto flushing and sanitization, matte black wall-hung closets, and thin-rim tabletop basins are leading the trend this year. Integrating concealed divertors and rose-gold fittings offers an ultra-luxurious feel. Visit Sangli Ceramica to see these setups live!',
-    featured_image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80',
+    featured_image: '',
     published: true,
     created_at: new Date().toISOString()
   }
