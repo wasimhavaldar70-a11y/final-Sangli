@@ -136,8 +136,8 @@ export default function AdminProductsClient({
 
         const uploadRes = await uploadProductImageAction(formData)
 
-        if (!uploadRes.success || !uploadRes.url) {
-          setErrorMsg(`Image upload failed: ${uploadRes.error}`)
+        if (!uploadRes.success || uploadRes.url === undefined) {
+          setErrorMsg(`Image upload failed: ${uploadRes.error || 'Unknown error'}`)
           return
         }
         
