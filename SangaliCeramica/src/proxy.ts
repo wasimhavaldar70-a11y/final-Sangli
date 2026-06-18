@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server'
-import { updateSession } from './lib/supabase/middleware'
+import { updateSession } from './lib/supabase/session'
 
 export async function proxy(request: NextRequest) {
   // Pass the request to the Supabase middleware for session management
