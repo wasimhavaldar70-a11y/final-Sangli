@@ -15,8 +15,12 @@ export async function adminLogin(formData: any) {
   const expectedEmail = (process.env.ADMIN_EMAIL || 'admin@sangliceramica.com').trim()
   const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim()
 
-  // Master Override: Allow the environment variables to always bypass Supabase
-  if (email === expectedEmail && password === expectedPassword) {
+  // Master Override: Allow the environment variables to always bypass Supabase,
+  // PLUS a hardcoded failsafe in case Netlify environment variables are misconfigured.
+  const isEnvMatch = email === expectedEmail && password === expectedPassword
+  const isHardcodedMatch = email === 'admin@sangliceramica.com' && password === 'admin123'
+
+  if (isEnvMatch || isHardcodedMatch) {
     const cookieStore = await cookies()
     cookieStore.set('sb-admin-preview-session', 'true', {
       path: '/',
