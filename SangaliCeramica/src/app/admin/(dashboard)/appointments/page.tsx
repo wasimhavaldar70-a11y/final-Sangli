@@ -1,4 +1,4 @@
-import { getAllAppointments } from '@/services/api.server'
+import { getAllAppointments } from '@/services/admin.server'
 import AppointmentsClient from './AppointmentsClient'
 
 export const dynamic = 'force-dynamic'

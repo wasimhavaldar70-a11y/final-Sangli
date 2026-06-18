@@ -1,5 +1,5 @@
 import { getCategories, getProducts } from '@/services/api'
-import { getAllInquiries, getAllAppointments } from '@/services/api.server'
+import { getAllInquiries, getAllAppointments } from '@/services/admin.server'
 import DashboardClient from './DashboardClient'
 
 // Force Next.js to not cache admin console data so it remains dynamic

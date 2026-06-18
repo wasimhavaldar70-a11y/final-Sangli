@@ -1,4 +1,4 @@
-import { getAllInquiries } from '@/services/api.server'
+import { getAllInquiries } from '@/services/admin.server'
 import InquiriesClient from './InquiriesClient'
 
 export const dynamic = 'force-dynamic'
