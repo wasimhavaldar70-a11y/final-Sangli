@@ -381,6 +381,15 @@ export async function uploadProductImageAction(formData: FormData) {
     return { success: false, error: 'No file provided' }
   }
 
+  const configured = await isDbConfigured()
+  if (!configured) {
+    // Return a placeholder image URL when in preview mode
+    return { 
+      success: true, 
+      url: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=600&q=80' 
+    }
+  }
+
   const supabase = await createClient()
 
   // Verify the user is authenticated on the server
