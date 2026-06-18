@@ -9,11 +9,11 @@ import { createClient } from '@/lib/supabase/server'
 import { StoreLocation } from '@/types/database'
 
 export async function adminLogin(formData: any) {
-  const email = formData.email
-  const password = formData.password
+  const email = (formData.email || '').trim()
+  const password = (formData.password || '').trim()
 
-  const expectedEmail = process.env.ADMIN_EMAIL || 'admin@sangliceramica.com'
-  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123'
+  const expectedEmail = (process.env.ADMIN_EMAIL || 'admin@sangliceramica.com').trim()
+  const expectedPassword = (process.env.ADMIN_PASSWORD || 'admin123').trim()
 
   // Master Override: Allow the environment variables to always bypass Supabase
   if (email === expectedEmail && password === expectedPassword) {
