@@ -7,6 +7,8 @@ import { getDb } from '@/lib/mongodb'
 import { randomUUID } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { StoreLocation } from '@/types/database'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
 
 export async function adminLogin(formData: any) {
   const email = (formData.email || '').trim()
@@ -386,29 +388,39 @@ export async function uploadProductImageAction(formData: FormData) {
   }
 
   const configured = await isDbConfigured()
-  if (!configured) {
-    // Return a placeholder image URL when in preview mode
-    return { 
-      success: true, 
-      url: '' 
-    }
-  }
-
   const supabase = await createClient()
 
   // Verify the user is authenticated on the server
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    const cookieStore = await cookies()
-    const isPreview = cookieStore.get('sb-admin-preview-session')?.value === 'true'
-    if (isPreview) {
-      // Fallback: If logged in via override but without a Supabase session
+  const cookieStore = await cookies()
+  const isPreview = cookieStore.get('sb-admin-preview-session')?.value === 'true'
+  
+  if (!user && !isPreview) {
+    return { success: false, error: 'Unauthorized. Please log in again.' }
+  }
+
+  if (!configured || (!user && isPreview)) {
+    // Fallback: Save file locally in public/uploads
+    try {
+      const uploadDir = join(process.cwd(), 'public', 'uploads')
+      await mkdir(uploadDir, { recursive: true })
+      
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+      
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      
+      await writeFile(join(uploadDir, fileName), buffer)
+      
       return { 
         success: true, 
-        url: '' 
+        url: `/uploads/${fileName}` 
       }
+    } catch (err) {
+      console.error('Local upload error', err)
+      return { success: false, error: 'Failed to upload locally.' }
     }
-    return { success: false, error: 'Unauthorized. Please log in again.' }
   }
 
   const fileExt = file.name.split('.').pop()
