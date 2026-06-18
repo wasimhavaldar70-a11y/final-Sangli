@@ -1,6 +1,5 @@
 import Header from '@/components/shared/Header'
 import Footer from '@/components/shared/Footer'
-import PreviewBanner from '@/components/shared/PreviewBanner'
 import WhatsAppCTA from '@/components/shared/WhatsAppCTA'
 
 export default function PublicLayout({
@@ -9,12 +8,11 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <>
-      <PreviewBanner />
+    <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-grow">{children}</main>
       <Footer />
       <WhatsAppCTA />
-    </>
+    </div>
   )
 }
