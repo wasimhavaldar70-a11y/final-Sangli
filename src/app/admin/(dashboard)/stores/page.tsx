@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { getDb } from '@/lib/mongodb'
+import { getStores } from '@/services/api'
 import { StoreLocation } from '@/types/database'
 import StoresClient from './StoresClient'
 import { Store } from 'lucide-react'
@@ -10,22 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminStoresPage() {
-  let stores: StoreLocation[] = []
-
-  try {
-    const db = await getDb()
-    if (db) {
-      stores = await db.collection('stores').find({}).sort({ created_at: -1 }).toArray() as any
-    }
-  } catch (error) {
-    console.error('Failed to fetch stores from MongoDB', error)
-  }
-
-  // Convert ObjectIds to strings if necessary
-  stores = stores.map((s: any) => ({
-    ...s,
-    _id: s._id?.toString(),
-  }))
+  const stores = await getStores()
 
   return (
     <div className="space-y-8 animate-fade-in">
