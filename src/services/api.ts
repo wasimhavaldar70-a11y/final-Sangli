@@ -8,6 +8,7 @@ import {
   Project,
   Blog,
   Settings,
+  StoreLocation
 } from '@/types/database'
 import {
   FALLBACK_SETTINGS,
@@ -18,125 +19,36 @@ import {
   FALLBACK_PROJECTS,
   FALLBACK_BLOGS,
 } from './fallbackData'
-import { getDb, isMongoConfigured } from '@/lib/mongodb'
-import { Db } from 'mongodb'
-
-let isSeeded = false
-
-// Auto-seed function to populate MongoDB with fallbackData on first run
-async function ensureMongoSeeded(db: Db) {
-  try {
-    // 1. Seed settings
-    const settingsCount = await db.collection('settings').countDocuments()
-    if (settingsCount === 0) {
-      const { id, ...rest } = FALLBACK_SETTINGS
-      await db.collection('settings').insertOne({ _id: id || '00000000-0000-0000-0000-000000000000', ...rest } as any)
-      console.log('Seeded settings collection in MongoDB')
-    }
-
-    // 2. Seed categories
-    const categoriesCount = await db.collection('categories').countDocuments()
-    if (categoriesCount === 0) {
-      const categoriesToInsert = FALLBACK_CATEGORIES.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('categories').insertMany(categoriesToInsert as any)
-      console.log('Seeded categories collection in MongoDB')
-    }
-
-    // 3. Seed products
-    const productsCount = await db.collection('products').countDocuments()
-    if (productsCount === 0) {
-      const productsToInsert = FALLBACK_PRODUCTS.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('products').insertMany(productsToInsert as any)
-      console.log('Seeded products collection in MongoDB')
-    }
-
-    // 4. Seed testimonials
-    const testimonialsCount = await db.collection('testimonials').countDocuments()
-    if (testimonialsCount === 0) {
-      const testimonialsToInsert = FALLBACK_TESTIMONIALS.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('testimonials').insertMany(testimonialsToInsert as any)
-      console.log('Seeded testimonials collection in MongoDB')
-    }
-
-    // 5. Seed gallery
-    const galleryCount = await db.collection('gallery').countDocuments()
-    if (galleryCount === 0) {
-      const galleryToInsert = FALLBACK_GALLERY.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('gallery').insertMany(galleryToInsert as any)
-      console.log('Seeded gallery collection in MongoDB')
-    }
-
-    // 6. Seed projects
-    const projectsCount = await db.collection('projects').countDocuments()
-    if (projectsCount === 0) {
-      const projectsToInsert = FALLBACK_PROJECTS.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('projects').insertMany(projectsToInsert as any)
-      console.log('Seeded projects collection in MongoDB')
-    }
-
-    // 7. Seed blogs
-    const blogsCount = await db.collection('blogs').countDocuments()
-    if (blogsCount === 0) {
-      const blogsToInsert = FALLBACK_BLOGS.map(({ id, ...rest }) => ({ _id: id, ...rest }))
-      await db.collection('blogs').insertMany(blogsToInsert as any)
-      console.log('Seeded blogs collection in MongoDB')
-    }
-  } catch (error) {
-    console.error('Failed to run MongoDB seed script:', error)
-  }
-}
-
-async function getMongoDb() {
-  const db = await getDb()
-  if (!db) return null
-  if (!isSeeded) {
-    isSeeded = true
-    try {
-      await ensureMongoSeeded(db)
-    } catch (e) {
-      console.error('Auto-seeding MongoDB failed, will retry next call:', e)
-      isSeeded = false
-    }
-  }
-  return db
-}
-
-function normalizeDoc<T>(doc: any): T {
-  if (!doc) return doc
-  const { _id, ...rest } = doc
-  return {
-    id: _id.toString(),
-    ...rest,
-  } as T
-}
+import { createClient } from '@/lib/supabase/server'
 
 export async function isDbConfigured(): Promise<boolean> {
-  return isMongoConfigured()
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  return !!url && !!key && !url.includes('placeholder')
 }
 
 export async function getSettings(): Promise<Settings> {
   if (!(await isDbConfigured())) return FALLBACK_SETTINGS
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_SETTINGS
-    const settings = await db.collection('settings').findOne({ _id: '00000000-0000-0000-0000-000000000000' } as any)
-    if (!settings) return FALLBACK_SETTINGS
-    return normalizeDoc<Settings>(settings)
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('settings').select('*').limit(1).single()
+    if (error || !data) return FALLBACK_SETTINGS
+    return data as Settings
   } catch (error) {
-    console.error('Failed to fetch settings from MongoDB, using fallback:', error)
+    console.error('Failed to fetch settings from Supabase, using fallback:', error)
     return FALLBACK_SETTINGS
   }
 }
 
-export async function getStores(): Promise<import('@/types/database').StoreLocation[]> {
+export async function getStores(): Promise<StoreLocation[]> {
   if (!(await isDbConfigured())) return []
   try {
-    const db = await getMongoDb()
-    if (!db) return []
-    const stores = await db.collection('stores').find({}).sort({ created_at: -1 }).toArray()
-    return stores.map(doc => normalizeDoc<import('@/types/database').StoreLocation>(doc))
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('stores').select('*').order('created_at', { ascending: false })
+    if (error) return []
+    return data as StoreLocation[]
   } catch (error) {
-    console.error('Failed to fetch stores from MongoDB:', error)
+    console.error('Failed to fetch stores from Supabase:', error)
     return []
   }
 }
@@ -144,12 +56,12 @@ export async function getStores(): Promise<import('@/types/database').StoreLocat
 export async function getCategories(): Promise<Category[]> {
   if (!(await isDbConfigured())) return FALLBACK_CATEGORIES
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_CATEGORIES
-    const docs = await db.collection('categories').find({}).sort({ name: 1 }).toArray()
-    return docs.map(doc => normalizeDoc<Category>(doc))
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('categories').select('*').order('name', { ascending: true })
+    if (error || !data) return FALLBACK_CATEGORIES
+    return data as Category[]
   } catch (error) {
-    console.error('Failed to fetch categories from MongoDB, using fallback:', error)
+    console.error('Failed to fetch categories from Supabase, using fallback:', error)
     return FALLBACK_CATEGORIES
   }
 }
@@ -167,16 +79,11 @@ export async function getProducts(options?: {
 
   if (!(await isDbConfigured())) {
     let items = [...FALLBACK_PRODUCTS]
-    if (options?.featured) {
-      items = items.filter((p) => p.featured)
-    }
+    if (options?.featured) items = items.filter((p) => p.featured)
     if (options?.categorySlug) {
       const category = FALLBACK_CATEGORIES.find((c) => c.slug === options.categorySlug)
-      if (category) {
-        items = items.filter((p) => p.category_id === category.id)
-      } else {
-        items = []
-      }
+      if (category) items = items.filter((p) => p.category_id === category.id)
+      else items = []
     }
     if (options?.query) {
       const q = options.query.toLowerCase()
@@ -184,7 +91,7 @@ export async function getProducts(options?: {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           (p.description && p.description.toLowerCase().includes(q)) ||
-          p.brand.toLowerCase().includes(q)
+          (p.brand && p.brand.toLowerCase().includes(q))
       )
     }
     return {
@@ -194,65 +101,39 @@ export async function getProducts(options?: {
   }
 
   try {
-    const db = await getMongoDb()
-    if (!db) throw new Error('MongoDB database not available')
+    const supabase = await createClient()
+    let query = supabase.from('products').select('*, product_images(*)', { count: 'exact' })
 
-    let filter: any = {}
     if (options?.featured) {
-      filter.featured = true
+      query = query.eq('featured', true)
     }
 
     if (options?.categorySlug) {
-      const category = await db.collection('categories').findOne({ slug: options.categorySlug })
+      const { data: category } = await supabase.from('categories').select('id').eq('slug', options.categorySlug).single()
       if (category) {
-        filter.category_id = category._id
+        query = query.eq('category_id', category.id)
       } else {
         return { products: [], totalCount: 0 }
       }
     }
 
     if (options?.query) {
-      const regex = new RegExp(options.query, 'i')
-      filter.$or = [
-        { name: regex },
-        { description: regex },
-        { brand: regex },
-      ]
+      query = query.or(`name.ilike.%${options.query}%,description.ilike.%${options.query}%,brand.ilike.%${options.query}%`)
     }
 
-    const totalCount = await db.collection('products').countDocuments(filter)
-    const docs = await db.collection('products')
-      .find(filter)
-      .sort({ created_at: -1 })
-      .skip(offset)
-      .limit(limit)
-      .toArray()
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (error) throw error
 
     return {
-      products: docs.map(doc => normalizeDoc<Product>(doc)),
-      totalCount,
+      products: (data || []) as Product[],
+      totalCount: count || 0,
     }
   } catch (error) {
-    console.error('Failed to fetch products from MongoDB, using fallback:', error)
-    let items = [...FALLBACK_PRODUCTS]
-    if (options?.featured) items = items.filter((p) => p.featured)
-    if (options?.categorySlug) {
-      const category = FALLBACK_CATEGORIES.find((c) => c.slug === options.categorySlug)
-      if (category) items = items.filter((p) => p.category_id === category.id)
-    }
-    if (options?.query) {
-      const q = options.query.toLowerCase()
-      items = items.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q) ||
-          p.brand.toLowerCase().includes(q)
-      )
-    }
-    return {
-      products: items.slice(offset, offset + limit),
-      totalCount: items.length,
-    }
+    console.error('Failed to fetch products from Supabase, using fallback:', error)
+    return { products: [], totalCount: 0 }
   }
 }
 
@@ -261,13 +142,12 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     return FALLBACK_PRODUCTS.find((p) => p.slug === slug) || null
   }
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_PRODUCTS.find((p) => p.slug === slug) || null
-    const product = await db.collection('products').findOne({ slug })
-    if (!product) return null
-    return normalizeDoc<Product>(product)
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('products').select('*, product_images(*)').eq('slug', slug).single()
+    if (error || !data) return null
+    return data as Product
   } catch (error) {
-    console.error(`Failed to fetch product ${slug} from MongoDB, using fallback:`, error)
+    console.error(`Failed to fetch product ${slug} from Supabase, using fallback:`, error)
     return FALLBACK_PRODUCTS.find((p) => p.slug === slug) || null
   }
 }
@@ -281,18 +161,16 @@ export async function getRelatedProducts(
     return FALLBACK_PRODUCTS.filter((p) => p.category_id === categoryId && p.id !== productId).slice(0, limit)
   }
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_PRODUCTS.filter((p) => p.category_id === categoryId && p.id !== productId).slice(0, limit)
-    const docs = await db.collection('products')
-      .find({
-        category_id: categoryId,
-        _id: { $ne: productId } as any,
-      })
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('products')
+      .select('*, product_images(*)')
+      .eq('category_id', categoryId)
+      .neq('id', productId)
       .limit(limit)
-      .toArray()
-    return docs.map(doc => normalizeDoc<Product>(doc))
+    if (error) return []
+    return data as Product[]
   } catch (error) {
-    console.error('Failed to fetch related products from MongoDB, using fallback:', error)
+    console.error('Failed to fetch related products from Supabase, using fallback:', error)
     return FALLBACK_PRODUCTS.filter((p) => p.category_id === categoryId && p.id !== productId).slice(0, limit)
   }
 }
@@ -300,12 +178,12 @@ export async function getRelatedProducts(
 export async function getTestimonials(): Promise<Testimonial[]> {
   if (!(await isDbConfigured())) return FALLBACK_TESTIMONIALS
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_TESTIMONIALS
-    const docs = await db.collection('testimonials').find({}).sort({ created_at: -1 }).toArray()
-    return docs.map(doc => normalizeDoc<Testimonial>(doc))
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
+    if (error) return FALLBACK_TESTIMONIALS
+    return data as Testimonial[]
   } catch (error) {
-    console.error('Failed to fetch testimonials from MongoDB, using fallback:', error)
+    console.error('Failed to fetch testimonials from Supabase, using fallback:', error)
     return FALLBACK_TESTIMONIALS
   }
 }
@@ -316,17 +194,14 @@ export async function getGalleryItems(category?: string): Promise<GalleryItem[]>
     return FALLBACK_GALLERY
   }
   try {
-    const db = await getMongoDb()
-    if (!db) {
-      if (category) return FALLBACK_GALLERY.filter((g) => g.category === category)
-      return FALLBACK_GALLERY
-    }
-    let filter: any = {}
-    if (category) filter.category = category
-    const docs = await db.collection('gallery').find(filter).sort({ created_at: -1 }).toArray()
-    return docs.map(doc => normalizeDoc<GalleryItem>(doc))
+    const supabase = await createClient()
+    let query = supabase.from('gallery').select('*').order('created_at', { ascending: false })
+    if (category) query = query.eq('category', category)
+    const { data, error } = await query
+    if (error) throw error
+    return data as GalleryItem[]
   } catch (error) {
-    console.error('Failed to fetch gallery from MongoDB, using fallback:', error)
+    console.error('Failed to fetch gallery from Supabase, using fallback:', error)
     if (category) return FALLBACK_GALLERY.filter((g) => g.category === category)
     return FALLBACK_GALLERY
   }
@@ -335,12 +210,12 @@ export async function getGalleryItems(category?: string): Promise<GalleryItem[]>
 export async function getProjects(): Promise<Project[]> {
   if (!(await isDbConfigured())) return FALLBACK_PROJECTS
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_PROJECTS
-    const docs = await db.collection('projects').find({}).sort({ created_at: -1 }).toArray()
-    return docs.map(doc => normalizeDoc<Project>(doc))
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false })
+    if (error) return FALLBACK_PROJECTS
+    return data as Project[]
   } catch (error) {
-    console.error('Failed to fetch projects from MongoDB, using fallback:', error)
+    console.error('Failed to fetch projects from Supabase, using fallback:', error)
     return FALLBACK_PROJECTS
   }
 }
@@ -348,15 +223,12 @@ export async function getProjects(): Promise<Project[]> {
 export async function getBlogs(): Promise<Blog[]> {
   if (!(await isDbConfigured())) return FALLBACK_BLOGS
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_BLOGS
-    const docs = await db.collection('blogs')
-      .find({ published: true })
-      .sort({ created_at: -1 })
-      .toArray()
-    return docs.map(doc => normalizeDoc<Blog>(doc))
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('blogs').select('*').eq('published', true).order('created_at', { ascending: false })
+    if (error) return FALLBACK_BLOGS
+    return data as Blog[]
   } catch (error) {
-    console.error('Failed to fetch blogs from MongoDB, using fallback:', error)
+    console.error('Failed to fetch blogs from Supabase, using fallback:', error)
     return FALLBACK_BLOGS
   }
 }
@@ -366,13 +238,12 @@ export async function getBlogBySlug(slug: string): Promise<Blog | null> {
     return FALLBACK_BLOGS.find((b) => b.slug === slug) || null
   }
   try {
-    const db = await getMongoDb()
-    if (!db) return FALLBACK_BLOGS.find((b) => b.slug === slug) || null
-    const blog = await db.collection('blogs').findOne({ slug })
-    if (!blog) return null
-    return normalizeDoc<Blog>(blog)
+    const supabase = await createClient()
+    const { data, error } = await supabase.from('blogs').select('*').eq('slug', slug).single()
+    if (error) return null
+    return data as Blog
   } catch (error) {
-    console.error(`Failed to fetch blog ${slug} from MongoDB, using fallback:`, error)
+    console.error(`Failed to fetch blog ${slug} from Supabase, using fallback:`, error)
     return FALLBACK_BLOGS.find((b) => b.slug === slug) || null
   }
 }
