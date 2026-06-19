@@ -384,7 +384,7 @@ export async function uploadProductImageAction(formData: FormData) {
     return { success: false, error: 'Unauthorized. Please log in again.' }
   }
 
-  if (!configured || (!user && isPreview)) {
+  if (!configured) {
     try {
       const uploadDir = join(process.cwd(), 'public', 'uploads')
       await mkdir(uploadDir, { recursive: true })
